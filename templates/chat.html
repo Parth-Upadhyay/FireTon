@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}FireTon{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        overflow: hidden; 
+    }
+    main.container {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    /* --- NEW CSS --- */
+    .nav-icon {
+        font-size: 1.2rem;
+        filter: brightness(10); 
+        color: #ff6a00;
+    }
+    /* --- END NEW --- */
+    
+    /* --- Profile Pic Styling --- */
+    .profile-pic-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0; 
+    }
+    .chat-header .profile-pic-small {
+        margin-right: 0; 
+    }
+    .chat-room {
+        align-items: center; 
+        display: flex;
+        gap: 12px;
+    }
+    .chat-room-name {
+        flex-grow: 1;
+        word-break: break-all;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .message-container { 
+        display: flex;
+        flex-direction: column;
+    }
+    .message.sent .message-container {
+        align-items: flex-end;
+    }
+    .message.received .message-container {
+        align-items: flex-start;
+    }
+    .message-row { 
+        display: flex;
+        align-items: flex-start; 
+        gap: 10px;
+    }
+    .message.sent .message-row {
+        flex-direction: row-reverse; 
+    }
+    .message-row .profile-pic-small {
+        margin-top: 4px; 
+    }
+    /* --- END Profile Pic --- */
+
+    /* --- BUG FIX: Message Alignment --- */
+    .message {
+        max-width: 100%;
+        padding: 0;
+        border-radius: 0;
+        position: relative;
+        word-wrap: break-word;
+    }
+    .message.sent {
+        align-self: flex-end;
+    }
+    /* --- END BUG FIX --- */
+    
+    .users-list {
+        border-right: 1px solid #30363d;
+        padding: 1rem;
+        background-color: #0d1117;
+        border-radius: 0;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    #chat-rooms-list {
+        flex-grow: 1; 
+        overflow-y: auto; 
+    }
+
+    /* --- REMOVED: Old sidebar buttons and hover menu are gone --- */
+    
+    .chat-room:hover { background-color: #1f252c; }
+    .chat-room.active { background-color: #ff6a00; color: #fff; }
+    .chat-main { display: flex; flex-direction: column; height: 100%; overflow: hidden; background-color: #161b22; border-radius: 0; }
+    .chat-header { padding: 1rem; border-bottom: 1px solid #30363d; font-weight: 600; color: #ff6a00; background-color: #0d1117; flex-shrink: 0; display: flex; align-items: center; gap: 1rem; }
+    
+    /* ... (rest of styles) ... */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="users-list">
+        
+        <div class="add-user-container">
+            <form id="add-user-form">
+                <input type="text" id="add-user-input" placeholder="Add user by username..." required>
+                <button type="submit" id="add-user-btn">+</button>
+            </form>
+        </div>
+        
+        <h3 style="margin-top: 1rem;">My Chats</h3>
+        
+        <ul id="chat-rooms-list">
+            {% for room in chat_rooms_data %}
+            <li class="chat-room" 
+                data-room-id="{{ room.id }}" 
+                data-is-group="{{ "true" if room.is_group else "false" }}"
+                data-creator-id="{{ room.creator_id or 0 }}">
+                
+                <img src="{{ room.profile_pic_url }}" alt="Room Pic" class="profile-pic-small">
+                <span class="chat-room-name">{{ room.name }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="current-user-bar" id="current-user-bar">
+            <img src="{{ profile_pic_url }}" alt="My Profile" class="profile-pic-small">
+            <span class="chat-room-name">{{ current_user.username }}</span>
+        </div>
+        
+    </div>
+
+    <div class="chat-main">
+        <div class="chat-header">
+            <button id="back-to-chats-btn">&larr;</button>
+            <img src="/static/images/profile_pics/default.png" alt="Header" id="selected-chat-pic" class="profile-pic-small" style="display: none;">
+            <span id="selected-user">Select a chat to begin</span>
+            <button id="manage-group-btn" style="display: none;">Manage</button>
+            <button id="leave-group-btn" style="display: none;">Leave Group</button>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="message-input">
+            <form id="message-form">
+                <button type="button" id="upload-btn" class="upload-btn">📎</button>
+                <input type="file" id="file-input" style="display: none;">
+                <input type="text" id="message" placeholder="Type your message..." disabled>
+                <button type="submit" id="send-btn">Send</button>
+            </form>
+        </div>
+    </div>
+    
+</div>
+
+<div id="create-group-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-modal-btn">&times;</span>
+        <h2>Create New Group</h2>
+        
+        <div class="form-group">
+            <label for="group-name-input">Group Name</label>
+            <input type="text" id="group-name-input" placeholder="Enter group name...">
+        </div>
+        
+        <h3>Select Members (Your Contacts)</h3>
+        <ul id="group-members-list" class="modal-user-list">
+            {% for user in contacts %}
+            <li>
+                <label>
+                    <input type="checkbox" class="group-user-select" data-id="{{ user.id }}">
+                    {{ user.username }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <button id="create-group-btn" class="btn btn-primary" style="width: 100%;">Create Group</button>
+    </div>
+</div>
+
+<div id="manage-group-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-manage-modal-btn">&times;</span>
+        <h2>Manage Group</h2>
+        
+        <hr>
+        
+        <h3>Group Icon</h3>
+        <div class="form-group">
+            <input type="file" id="group-pic-input" name="group_pic" accept="image/png, image/jpeg, image/gif">
+            <button id="group-pic-upload-btn" class="btn btn-primary" style="margin-top: 10px;">Upload New Icon</button>
+        </div>
+        <hr>
+        
+        <h3>Current Members</h3>
+        <ul id="manage-remove-list" class="modal-user-list">
+            </ul>
+
+        <hr>
+        
+        <h3>Add Contacts</h3>
+        <ul id="manage-add-list" class="modal-user-list">
+            </ul>
+    </div>
+</div>
+
+<div id="manage-block-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-block-modal-btn">&times;</span>
+        <h2>Manage Blocked Users</h2>
+        
+        <hr>
+        
+        <h3>All Users</h3>
+        <ul id="manage-unblocked-list" class="modal-user-list">
+            </ul>
+
+        <hr>
+        
+        <h3>Blocked Users</h3>
+        <ul id="manage-blocked-list" class="modal-user-list">
+            </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    const currentUserId = {{ current_user_id }};
+</script>
+<script src="{{ url_for('static', filename='js/chat.js', v='1.5') }}"></script>
+{% endblock %}

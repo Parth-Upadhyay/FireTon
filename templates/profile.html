@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - FireTon{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 500px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(255, 106, 0, 0.1);
+        text-align: center;
+    }
+    .profile-pic-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #ff6a00;
+        margin-bottom: 1.5rem;
+    }
+    .profile-container h2 {
+        color: #ff6a00;
+        margin-bottom: 1.5rem;
+    }
+    /* Style the file input */
+    input[type="file"] {
+        color: #e6e6e6;
+        background-color: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 0.75rem;
+    }
+    input[type="file"]::file-selector-button {
+        background-color: #ff6a00;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-right: 1rem;
+    }
+    input[type="file"]::file-selector-button:hover {
+        background-color: #ff812e;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>My Profile</h2>
+    
+    <img src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic-large">
+    
+    <form action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="profile_pic">Update Profile Picture</label>
+            <input type="file" id="profile_pic" name="profile_pic" accept="image/png, image/jpeg, image/gif" required>
+            <small>Allowed: .png, .jpg, .gif. Max 50MB.</small>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Upload</button>
+    </form>
+</div>
+{% endblock %}

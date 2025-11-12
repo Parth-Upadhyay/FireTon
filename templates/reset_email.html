@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            margin: 20px 0;
+            background-color: #ff6a00;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .small-text {
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Hi, {{ username }}!</h2>
+        <p>We received a request to reset your password for your FireTon account. Please click the button below to set a new password:</p>
+        
+        <a href="{{ reset_url }}" class="button" style="color: #ffffff;">Reset Your Password</a>
+        
+        <p>This link is valid for one hour.</p>
+        
+        <p class="small-text">If you did not request a password reset, please ignore this email.</p>
+        <p class="small-text">Link: {{ reset_url }}</p>
+    </div>
+</body>
+</html>

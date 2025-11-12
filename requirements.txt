@@ -1,0 +1,8 @@
+Flask==3.0.0
+Flask-SocketIO==5.3.6
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+python-socketio==5.10.0
+python-engineio==4.8.0
+cryptography==41.0.5
+Werkzeug==3.0.1

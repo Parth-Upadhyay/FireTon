@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Group{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 600px; margin: 3rem auto;">
+    <h2>Create New Group</h2>
+    <p class="subtitle">Select members to start your secure group chat.</p>
+
+    <form id="create-group-form" method="POST" action="{{ url_for('create_group') }}">
+        <div class="form-group">
+            <label for="group-name-input">Group Name</label>
+            <input type="text" id="group-name-input" name="group_name" placeholder="Enter group name..." required>
+        </div>
+        
+        <h3>Select Members (Your Contacts)</h3>
+        <ul id="group-members-list" class="modal-user-list">
+            {% for user in contacts %}
+            <li>
+                <label>
+                    <input type="checkbox" class="group-user-select" name="user_ids" value="{{ user.id }}">
+                    {{ user.username }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <button type="submit" id="create-group-btn" class="btn btn-primary" style="width: 100%;">Create Group</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const createGroupForm = document.getElementById('create-group-form');
+    
+    if (createGroupForm) {
+        createGroupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const groupName = document.getElementById('group-name-input').value.trim();
+            const selectedUserIds = [];
+            document.querySelectorAll('.group-user-select:checked').forEach(cb => {
+                selectedUserIds.push(cb.value);
+            });
+
+            if (!groupName) {
+                alert('Please enter a group name.');
+                return;
+            }
+            if (selectedUserIds.length === 0) {
+                alert('Please select at least one member.');
+                return;
+            }
+
+            try {
+                // Submit the form data as JSON to the API endpoint
+                const response = await fetch('{{ url_for("create_group") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        'group_name': groupName,
+                        'user_ids': selectedUserIds
+                    }),
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const newRoom = await response.json();
+                    alert(`Group '${newRoom.name}' created!`);
+                    // Redirect to the main chat view
+                    window.location.href = "{{ url_for('chat') }}";
+                } else {
+                    const err = await response.json();
+                    alert(`Error creating group: ${err.error}`);
+                }
+            } catch (err) {
+                console.error('Failed to create group:', err);
+                alert('An internal error occurred.');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

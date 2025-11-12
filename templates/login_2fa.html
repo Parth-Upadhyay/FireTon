@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}2FA - FireTon{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Check Your Email</h2>
+    <p class="subtitle">We sent a 6-digit code to your email. Enter it below to log in.</p>
+
+    <form method="POST" action="{{ url_for('login_2fa') }}">
+        <div class="form-group">
+            <label for="otp">6-Digit Code</label>
+            <input type="text" id="otp" name="otp" required maxlength="6" pattern="\d{6}" title="Enter the 6-digit code">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Verify & Log In</button>
+    </form>
+    
+    <div class="auth-link" style="margin-top: 1rem;">
+        <a href="{{ url_for('login') }}">Back to Login</a>
+    </div>
+</div>
+{% endblock %}

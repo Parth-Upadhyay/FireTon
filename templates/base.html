@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FireTon{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dark-theme">
+    
+    <nav class="navbar">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="FireTon Logo" class="navbar-logo">
+        FireTon
+        </a>
+        
+        {% if current_user.is_authenticated %}
+        <div class="navbar-menu">
+            
+            <a href="{{ url_for('chat') }}" title="Back to Chats">
+                <img src="{{ url_for('static', filename='icons/home.png') }}" alt="Home" class="nav-icon-img">
+            </a>
+            
+            <a href="{{ url_for('new_group') }}" title="New Group">
+                <img src="{{ url_for('static', filename='icons/group_add.png') }}" alt="New Group" class="nav-icon-img">
+            </a>
+            
+            <a href="{{ url_for('manage_blocked') }}" title="Manage Blocked">
+                <img src="{{ url_for('static', filename='icons/block.png') }}" alt="Manage Block" class="nav-icon-img">
+            </a>
+            
+            <a href="{{ url_for('profile') }}" title="My Profile">
+                <img src="{{ url_for('static', filename='icons/user_profile.png') }}" alt="Profile" class="nav-icon-img">
+            </a>
+            
+            <span class="user-name">{{ current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

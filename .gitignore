@@ -1,0 +1,17 @@
+# Python junk
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Database
+chat.db
+
+# Keys
+secret.key
+# VSCode (optional)
+.vscode/
+
+#profile pics
+static/images/profile_pics/

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Blocked Users{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 600px; margin: 3rem auto;">
+    <h2>Manage Blocked Users</h2>
+    <p class="subtitle">Block or unblock users from messaging you directly.</p>
+
+    <hr>
+
+    <h3>Your Contacts</h3>
+    <ul id="manage-unblocked-list" class="modal-user-list">
+        {% for user in unblocked_contacts %}
+        <li class="manage-user-item" data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+            <span>{{ user.username }}</span>
+            <button class="block-btn" data-id="{{ user.id }}">Block</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h3>Blocked Users</h3>
+    <ul id="manage-blocked-list" class="modal-user-list">
+        {% for user in blocked_contacts %}
+        <li class="manage-user-item" data-user-id="{{ user.id }}" data-username="{{ user.username }}">
+            <span>{{ user.username }}</span>
+            <button class="unblock-btn" data-id="{{ user.id }}">Unblock</button>
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <div class="auth-link">
+        <a href="{{ url_for('chat') }}">← Back to Chat</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js', v='1.4') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Re-attach listeners for the new static page ---
+    
+    const unblockedList = document.getElementById('manage-unblocked-list');
+    const blockedList = document.getElementById('manage-blocked-list');
+
+    // Attach listeners to Block buttons
+    unblockedList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('block-btn')) {
+            const userId = e.target.dataset.id;
+            const username = e.target.closest('li').dataset.username;
+            if (confirm(`Are you sure you want to block ${username}?`)) {
+                handleBlockUser(userId, username);
+            }
+        }
+    });
+
+    // Attach listeners to Unblock buttons
+    blockedList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('unblock-btn')) {
+            const userId = e.target.dataset.id;
+            const username = e.target.closest('li').dataset.username;
+            handleUnblockUser(userId, username);
+        }
+    });
+
+    async function handleBlockUser(userId, username) {
+        try {
+            const response = await fetch('/api/user/block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'user_id': userId }),
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`${username} has been blocked.`);
+                // Move item from unblocked list to blocked list
+                const listItem = unblockedList.querySelector(`[data-user-id="${userId}"]`);
+                if (listItem) {
+                    listItem.querySelector('button').textContent = 'Unblock';
+                    listItem.querySelector('button').classList.remove('block-btn');
+                    listItem.querySelector('button').classList.add('unblock-btn');
+                    blockedList.appendChild(listItem);
+                    // Crucial: Reload page to remove chat from sidebar once user returns to chat
+                    // window.location.href = "{{ url_for('chat') }}"; 
+                }
+            } else { alert(`Error: ${data.error}`); }
+        } catch (err) { console.error(err); alert('An error occurred.'); }
+    }
+
+    async function handleUnblockUser(userId, username) {
+        try {
+            const response = await fetch('/api/user/unblock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'user_id': userId }),
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`${username} has been unblocked.`);
+                // Move item from blocked list back to unblocked list
+                const listItem = blockedList.querySelector(`[data-user-id="${userId}"]`);
+                if (listItem) {
+                    listItem.querySelector('button').textContent = 'Block';
+                    listItem.querySelector('button').classList.remove('unblock-btn');
+                    listItem.querySelector('button').classList.add('block-btn');
+                    unblockedList.appendChild(listItem);
+                }
+            } else { alert(`Error: ${data.error}`); }
+        } catch (err) { console.error(err); alert('An error occurred.'); }
+    }
+});
+</script>
+{% endblock %}
